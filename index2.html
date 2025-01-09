@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оптимизация процессов разработки</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, button {
+            padding: 10px;
+            width: 100%;
+            margin-top: 5px;
+        }
+        #results {
+            margin-top: 30px;
+            text-align: center;
+        }
+        canvas {
+            width: 100%;
+            max-width: 800px;
+            margin: auto;
+        }
+        table {
+            width: 100%;
+            margin-top: 30px;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        .update-section {
+            margin-bottom: 30px;
+        }
+        .manual-section {
+            margin-top: 40px;
+            background-color: #f4f4f4;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .tab {
+            cursor: pointer;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        .tab-content {
+            display: none;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Оптимизация процессов разработки ПО</h1>
+    <div class="section">
+        <h2>Введение</h2>
+        <p>Этот сайт позволяет рассчитывать минимальное время на этапы разработки программного продукта по нескольким методологиям разработки.</p>
+    </div>
+
+    <div class="section">
+        <h2>Ввод данных</h2>
+        <div class="form-group">
+            <label for="totalTime">Общее время на разработку (часы):</label>
+            <input type="number" id="totalTime" placeholder="Введите время (часы)" min="0">
+        </div>
+        <button onclick="calculate()">Рассчитать</button>
+    </div>
+
+    <div id="results" class="section" style="display:none;">
+        <h2>Результаты</h2>
+        <div id="summary"></div>
+        <h3>Таблица времени на этапы разработки</h3>
+        <table id="timeTable"></table>
+        <h3>График времени на этапы для каждой методологии</h3>
+        <canvas id="timeChart"></canvas>
+    </div>
+
+    <div id="updateSection" class="update-section" style="display:none;">
+        <h2>Изменить процентное соотношение времени для каждой методологии</h2>
+        <div>
+            <h3>Waterfall</h3>
+            <label for="waterfallAnalysis">Анализ требований (%)</label>
+            <input type="number" id="waterfallAnalysis" value="15">
+            <label for="waterfallDesign">Проектирование (%)</label>
+            <input type="number" id="waterfallDesign" value="15">
+            <label for="waterfallImplementation">Реализация (%)</label>
+            <input type="number" id="waterfallImplementation" value="40">
+            <label for="waterfallTesting">Тестирование (%)</label>
+            <input type="number" id="waterfallTesting" value="10">
+            <label for="waterfallDeployment">Внедрение (%)</label>
+            <input type="number" id="waterfallDeployment" value="5">
+            <label for="waterfallMaintenance">Сопровождение (%)</label>
+            <input type="number" id="waterfallMaintenance" value="15">
+        </div>
+
+        <div>
+            <h3>Agile</h3>
+            <label for="agileAnalysis">Анализ требований (%)</label>
+            <input type="number" id="agileAnalysis" value="10">
+            <label for="agileDesign">Проектирование (%)</label>
+            <input type="number" id="agileDesign" value="10">
+            <label for="agileImplementation">Реализация (%)</label>
+            <input type="number" id="agileImplementation" value="50">
+            <label for="agileTesting">Тестирование (%)</label>
+            <input type="number" id="agileTesting" value="20">
+            <label for="agileDeployment">Внедрение (%)</label>
+            <input type="number" id="agileDeployment" value="5">
+            <label for="agileMaintenance">Сопровождение (%)</label>
+            <input type="number" id="agileMaintenance" value="5">
+        </div>
+
+        <div>
+            <h3>Scrum</h3>
+            <label for="scrumAnalysis">Анализ требований (%)</label>
+            <input type="number" id="scrumAnalysis" value="5">
+            <label for="scrumDesign">Проектирование (%)</label>
+            <input type="number" id="scrumDesign" value="5">
+            <label for="scrumImplementation">Реализация (%)</label>
+            <input type="number" id="scrumImplementation" value="50">
+            <label for="scrumTesting">Тестирование (%)</label>
+            <input type="number" id="scrumTesting" value="25">
+            <label for="scrumDeployment">Внедрение (%)</label>
+            <input type="number" id="scrumDeployment" value="5">
+            <label for="scrumMaintenance">Сопровождение (%)</label>
+            <input type="number" id="scrumMaintenance" value="10">
+        </div>
+
+        <div>
+            <h3>SSDL</h3>
+            <label for="ssdlAnalysis">Анализ требований (%)</label>
+            <input type="number" id="ssdlAnalysis" value="20">
+            <label for="ssdlDesign">Проектирование (%)</label>
+            <input type="number" id="ssdlDesign" value="25">
+            <label for="ssdlImplementation">Реализация (%)</label>
+            <input type="number" id="ssdlImplementation" value="30">
+            <label for="ssdlTesting">Тестирование (%)</label>
+            <input type="number" id="ssdlTesting" value="10">
+            <label for="ssdlDeployment">Внедрение (%)</label>
+            <input type="number" id="ssdlDeployment" value="5">
+            <label for="ssdlMaintenance">Сопровождение (%)</label>
+            <input type="number" id="ssdlMaintenance" value="10">
+        </div>
+
+        <button onclick="updateValues()">Обновить</button>
+    </div>
+
+    <div class="manual-section">
+        <h2>Мануал по методологиям разработки</h2>
+        <div class="tab" onclick="toggleTab('waterfall')">Waterfall</div>
+        <div id="waterfall" class="tab-content">
+            <p>Методология разработки программного обеспечения Waterfall, или каскадная модель, представляет собой последовательный и строго регламентированный подход к созданию программных продуктов. Впервые описанная в 1970 году американским ученым Уинстоном Ройсом, эта модель основывается на линейной структуре, где каждый этап разработки начинается только после полного завершения предыдущего.</p>
+            <h2>Ключевые фазы каскадной модели:</h2>
+            <ol>
+                <li><strong>Анализ требований:</strong> На этом этапе собираются и документируются все требования к будущему продукту, формируется техническое задание, определяются цели, бюджет и график работ.</li>
+                <li><strong>Проектирование:</strong> Разрабатывается архитектура системы, создаются прототипы и дизайн-макеты, выбираются технологии и инструменты для реализации проекта.</li>
+                <li><strong>Реализация:</strong> Программисты приступают к написанию кода в соответствии с утвержденным проектом и техническим заданием.</li>
+                <li><strong>Тестирование:</strong> Готовый продукт проходит проверку на соответствие требованиям, выявляются и устраняются возможные ошибки и недочеты.</li>
+                <li><strong>Внедрение:</strong> Продукт устанавливается в рабочую среду, проводится обучение пользователей, осуществляется запуск системы в эксплуатацию.</li>
+                <li><strong>Поддержка:</strong> Обеспечивается сопровождение продукта, включающее исправление обнаруженных ошибок, обновление и улучшение функционала по мере необходимости.</li>
+            </ol>
+            <p>Основной особенностью Waterfall является строгая последовательность этапов: переход к следующей фазе возможен только после завершения предыдущей, а возврат к ранее выполненным этапам затруднен или вовсе невозможен. Это обеспечивает четкую структуру и предсказуемость процесса разработки, но снижает гибкость при необходимости внесения изменений в проект.</p>
+            <h2>Преимущества каскадной модели:</h2>
+            <ul>
+                <li><strong>Четкая структура и последовательность:</strong> Каждый этап подробно документируется, что облегчает управление проектом и контроль за его выполнением.</li>
+                <li><strong>Простота планирования:</strong> Поскольку все требования определены на начальном этапе, можно точно оценить сроки и ресурсы, необходимые для реализации проекта.</li>
+                <li><strong>Легкость в управлении:</strong> Благодаря детальной документации и последовательности этапов, управление проектом становится более прозрачным и контролируемым.</li>
+            </ul>
+            <h2>Недостатки Waterfall:</h2>
+            <ul>
+                <li><strong>Низкая гибкость:</strong> Изменение требований на поздних этапах разработки затруднительно и может привести к значительным задержкам и перерасходу ресурсов.</li>
+                <li><strong>Риски обнаружения ошибок на поздних стадиях:</strong> Проблемы, выявленные на этапе тестирования, могут требовать существенных изменений, что увеличивает затраты и сроки реализации.</li>
+                <li><strong>Отсутствие ранней обратной связи:</strong> Пользователи и заказчики получают доступ к продукту только после его полного завершения, что исключает возможность внесения корректировок в процессе разработки.</li>
+            </ul>
+            <p>В современных условиях, когда требования к программному обеспечению могут меняться в ходе разработки, Waterfall уступает место более гибким методологиям, таким как Agile. Тем не менее, каскадная модель остается актуальной для проектов с четко определенными и неизменными требованиями, где важны строгая последовательность и контроль на каждом этапе разработки.</p>        
+        </div>
+        <div class="tab" onclick="toggleTab('agile')">Agile</div>
+        <div id="agile" class="tab-content">
+            <p>Agile, или гибкая методология разработки программного обеспечения, представляет собой совокупность принципов и практик, направленных на повышение адаптивности и эффективности процессов создания программных продуктов. В основе Agile лежит стремление к итеративной и инкрементальной разработке, что позволяет командам оперативно реагировать на изменяющиеся требования и условия рынка.</p>
+
+    <p>В 2001 году группа разработчиков сформулировала «Манифест гибкой разработки программного обеспечения» (Agile Manifesto), который определил четыре ключевые ценности:</p>
+
+    <ol>
+        <li><strong>Люди и взаимодействие важнее процессов и инструментов.</strong> Это подчеркивает значимость эффективной коммуникации и сотрудничества между членами команды.</li>
+        <li><strong>Работающий продукт важнее исчерпывающей документации.</strong> Приоритет отдается созданию функционального программного обеспечения.</li>
+        <li><strong>Сотрудничество с заказчиком важнее согласования условий контракта.</strong> Постоянное взаимодействие с клиентом позволяет учитывать его пожелания.</li>
+        <li><strong>Готовность к изменениям важнее следования первоначальному плану.</strong> Гибкость в реагировании на изменяющиеся требования позволяет команде адаптироваться.</li>
+    </ol>
+
+    <p>Эти ценности подкреплены двенадцатью принципами, среди которых регулярная поставка работающего программного обеспечения, тесное сотрудничество с бизнес-представителями, поддержка мотивированных специалистов и стремление к техническому совершенству.</p>
+
+    <h2>Наиболее распространенные методологии, основанные на принципах Agile:</h2>
+    <ul>
+        <li><strong>Scrum:</strong> фреймворк, организующий работу команды в серии коротких итераций, называемых спринтами.</li>
+        <li><strong>Kanban:</strong> метод управления, визуализирующий поток задач с помощью доски Kanban.</li>
+        <li><strong>Extreme Programming (XP):</strong> акцентирует внимание на технических аспектах разработки.</li>
+        <li><strong>Lean:</strong> подход, направленный на максимизацию ценности для клиента при минимизации потерь.</li>
+    </ul>
+
+    <p>Применение Agile-методологий способствует повышению гибкости и адаптивности команд, улучшению качества продукта и сокращению времени его вывода на рынок.</p>
+
+        </div>
+        <div class="tab" onclick="toggleTab('scrum')">Scrum</div>
+        <div id="scrum" class="tab-content"><p>Scrum представляет собой фреймворк гибкой разработки, предназначенный для управления сложными проектами в условиях динамично меняющихся требований. Его основная цель заключается в обеспечении возможности быстрой адаптации к изменениям и эффективной поставки ценности пользователям.</p>
+
+            <h2>Основные принципы Scrum</h2>
+            <ul>
+                <li><strong>Итеративность и инкрементальность:</strong> Работа над проектом делится на короткие временные отрезки, называемые спринтами, обычно продолжительностью от одной до четырех недель.</li>
+                <li><strong>Прозрачность:</strong> Все аспекты процесса разработки должны быть видимыми и понятными для всех участников.</li>
+                <li><strong>Адаптация:</strong> Команда регулярно анализирует свою работу и вносит необходимые коррективы.</li>
+            </ul>
+        
+            <h2>Роли в Scrum</h2>
+            <ul>
+                <li><strong>Владелец продукта (Product Owner):</strong> Отвечает за формирование и управление бэклогом продукта.</li>
+                <li><strong>Scrum-мастер:</strong> Обеспечивает соблюдение принципов и практик Scrum.</li>
+                <li><strong>Команда разработки (Development Team):</strong> Непосредственно занимается созданием продукта.</li>
+            </ul>
+        
+            <h2>Основные артефакты Scrum</h2>
+            <ul>
+                <li><strong>Бэклог продукта (Product Backlog):</strong> Упорядоченный список всех функций, улучшений и исправлений, необходимых для продукта.</li>
+                <li><strong>Бэклог спринта (Sprint Backlog):</strong> Набор задач для выполнения в текущем спринте.</li>
+                <li><strong>Инкремент:</strong> Завершенный и готовый к использованию продукт или его часть.</li>
+            </ul>
+        
+            <h2>События в Scrum</h2>
+            <ul>
+                <li><strong>Планирование спринта (Sprint Planning):</strong> Встреча для определения целей спринта и выбора задач.</li>
+                <li><strong>Ежедневный скрам (Daily Scrum):</strong> Краткие ежедневные собрания для обсуждения прогресса.</li>
+                <li><strong>Обзор спринта (Sprint Review):</strong> Встреча для демонстрации результатов и сбора обратной связи.</li>
+                <li><strong>Ретроспектива спринта (Sprint Retrospective):</strong> Анализ прошедшего спринта для улучшений.</li>
+            </ul>
+        
+            <p>Применение Scrum способствует повышению гибкости и адаптивности команды, улучшению качества продукта и удовлетворенности клиентов.</p>
+        </div>
+        <div class="tab" onclick="toggleTab('SSDLC')">SSDLC</div>
+        <div id="SSDLC" class="tab-content"><p>Методология разработки Secure Software Development Life Cycle (SSDLC) представляет собой интеграцию практик обеспечения безопасности на всех этапах жизненного цикла разработки программного обеспечения. Основная цель SSDLC заключается в создании защищённых программных продуктов путём проактивного выявления и устранения уязвимостей на ранних стадиях разработки.</p>
+
+            <h2>Основные этапы SSDLC</h2>
+            <ul>
+                <li><strong>Планирование:</strong> Определяются требования к безопасности будущего продукта.</li>
+                <li><strong>Проектирование:</strong> Разрабатываются архитектурные решения с учётом принципов безопасного программирования.</li>
+                <li><strong>Реализация:</strong> Применяются стандарты кодирования, направленные на предотвращение распространённых уязвимостей.</li>
+                <li><strong>Тестирование:</strong> Включает статический и динамический анализ безопасности, а также тестирование на проникновение.</li>
+                <li><strong>Сопровождение:</strong> Осуществляется мониторинг безопасности и оперативное реагирование на выявленные угрозы.</li>
+            </ul>
+        
+            <h2>Преимущества SSDLC</h2>
+            <p>Интеграция SSDLC в процесс разработки способствует снижению рисков, связанных с безопасностью, и повышению доверия пользователей к программному обеспечению.</p>
+        
+            <h2>Требования к внедрению SSDLC</h2>
+            <p>Следование данной методологии требует междисциплинарного подхода и тесного взаимодействия между разработчиками, специалистами по безопасности и другими заинтересованными сторонами.</p>
+        </div>
+    </div>
+
+    <script>
+        const defaultPercentages = {
+            waterfall: [15, 15, 40, 10, 5, 15],
+            agile: [10, 10, 50, 20, 5, 5],
+            scrum: [5, 5, 50, 25, 5, 10],
+            ssdlc: [20, 25, 30, 10, 5, 10]
+        };
+
+        let methodologyPercentages = JSON.parse(JSON.stringify(defaultPercentages)); // Создаем копию
+        let timeChart = null;
+
+        function calculate() {
+            const totalTime = parseFloat(document.getElementById('totalTime').value);
+
+            if (isNaN(totalTime) || totalTime <= 0) {
+                alert("Пожалуйста, введите корректное общее время больше 0.");
+                return;
+            }
+
+            const methodologies = ['waterfall', 'agile', 'scrum', 'ssdlc'];
+            let tableContent = '<thead><tr><th>Этап</th><th>Waterfall</th><th>Agile</th><th>Scrum</th><th>SSDL</th></tr></thead><tbody>';
+            const stageNames = ['Анализ требований', 'Проектирование', 'Реализация', 'Тестирование', 'Внедрение', 'Сопровождение'];
+
+            const stageTimes = methodologies.map(method => {
+                return methodologyPercentages[method].map(percentage => (percentage / 100) * totalTime);
+            });
+
+            for (let i = 0; i < 6; i++) {
+                tableContent += `<tr><td>${stageNames[i]}</td>`;
+                methodologies.forEach(method => {
+                    const time = (methodologyPercentages[method][i] / 100) * totalTime;
+                    tableContent += `<td>${methodologyPercentages[method][i]}% (${time.toFixed(2)} часов)</td>`;
+                });
+                tableContent += '</tr>';
+            }
+
+            tableContent += '</tbody>';
+            document.getElementById('timeTable').innerHTML = tableContent;
+
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('updateSection').style.display = 'block';
+
+            const ctx = document.getElementById('timeChart').getContext('2d');
+
+            if (timeChart) {
+                timeChart.destroy(); // Уничтожаем старый график перед созданием нового
+            }
+
+            timeChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: stageNames,
+                    datasets: methodologies.map((method, index) => ({
+                        label: method.charAt(0).toUpperCase() + method.slice(1),
+                        data: stageTimes[index],
+                        borderColor: getRandomColor(),
+                        backgroundColor: 'rgba(0,0,0,0)',
+                        borderWidth: 2,
+                        fill: false
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Время (часы)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function updateValues() {
+            methodologyPercentages.waterfall = [
+                parseFloat(document.getElementById('waterfallAnalysis').value),
+                parseFloat(document.getElementById('waterfallDesign').value),
+                parseFloat(document.getElementById('waterfallImplementation').value),
+                parseFloat(document.getElementById('waterfallTesting').value),
+                parseFloat(document.getElementById('waterfallDeployment').value),
+                parseFloat(document.getElementById('waterfallMaintenance').value)
+            ];
+
+            methodologyPercentages.agile = [
+                parseFloat(document.getElementById('agileAnalysis').value),
+                parseFloat(document.getElementById('agileDesign').value),
+                parseFloat(document.getElementById('agileImplementation').value),
+                parseFloat(document.getElementById('agileTesting').value),
+                parseFloat(document.getElementById('agileDeployment').value),
+                parseFloat(document.getElementById('agileMaintenance').value)
+            ];
+
+            methodologyPercentages.scrum = [
+                parseFloat(document.getElementById('scrumAnalysis').value),
+                parseFloat(document.getElementById('scrumDesign').value),
+                parseFloat(document.getElementById('scrumImplementation').value),
+                parseFloat(document.getElementById('scrumTesting').value),
+                parseFloat(document.getElementById('scrumDeployment').value),
+                parseFloat(document.getElementById('scrumMaintenance').value)
+            ];
+
+            methodologyPercentages.ssdlc = [
+                parseFloat(document.getElementById('ssdlAnalysis').value),
+                parseFloat(document.getElementById('ssdlDesign').value),
+                parseFloat(document.getElementById('ssdlImplementation').value),
+                parseFloat(document.getElementById('ssdlTesting').value),
+                parseFloat(document.getElementById('ssdlDeployment').value),
+                parseFloat(document.getElementById('ssdlMaintenance').value)
+            ];
+
+            calculate();
+        }
+
+        function toggleTab(tabId) {
+            const content = document.getElementById(tabId);
+            content.style.display = content.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+
+</body>
+</html>
